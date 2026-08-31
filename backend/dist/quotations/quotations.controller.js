@@ -30,6 +30,52 @@ let QuotationsController = class QuotationsController {
     findOne(req, id) {
         return this.quotationsService.findOne(id, req.user.companyId);
     }
+    async generatePdf(req, id, res) {
+        const quote = await this.quotationsService.findOne(id, req.user.companyId);
+        const html = `
+      <html>
+        <head>
+          <title>Quotation ${quote.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+            .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 40px; }
+            .title { font-size: 24px; font-weight: bold; }
+            .details { margin-bottom: 40px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #f8f9fa; }
+            .total-row { font-weight: bold; background-color: #f8f9fa; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">QUOTATION</div>
+            <div>Ref: ${quote.id}</div>
+            <div>Date: ${quote.createdAt.toLocaleDateString()}</div>
+          </div>
+          <div class="details">
+            <p><strong>To:</strong> Customer ID ${quote.customerId}</p>
+          </div>
+          <table>
+            <tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+            ${quote.items.map(item => `
+              <tr>
+                <td>${item.description}</td>
+                <td>${item.quantity}</td>
+                <td>RM ${item.unitPrice.toFixed(2)}</td>
+                <td>RM ${item.totalPrice.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+            <tr><td colspan="3" style="text-align:right">Subtotal</td><td>RM ${quote.subtotal.toFixed(2)}</td></tr>
+            <tr><td colspan="3" style="text-align:right">Discount</td><td>RM ${quote.discount.toFixed(2)}</td></tr>
+            <tr class="total-row"><td colspan="3" style="text-align:right">Grand Total</td><td>RM ${quote.total.toFixed(2)}</td></tr>
+          </table>
+          <script>window.print();</script>
+        </body>
+      </html>
+    `;
+        res.type('text/html').send(html);
+    }
     updateStatus(req, id, status) {
         return this.quotationsService.updateStatus(id, req.user.companyId, status);
     }
@@ -58,6 +104,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], QuotationsController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Get)(':id/pdf'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], QuotationsController.prototype, "generatePdf", null);
 __decorate([
     (0, common_1.Patch)(':id/status'),
     __param(0, (0, common_1.Request)()),

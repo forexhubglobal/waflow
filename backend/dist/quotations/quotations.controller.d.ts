@@ -1,3 +1,4 @@
+import type { Response } from 'express';
 import { QuotationsService } from './quotations.service';
 export declare class QuotationsController {
     private readonly quotationsService;
@@ -13,27 +14,27 @@ export declare class QuotationsController {
         }[];
     } & {
         id: string;
+        companyId: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        companyId: string;
         customerId: string;
-        subtotal: number;
+        leadId: string | null;
         discount: number;
+        subtotal: number;
         total: number;
         validUntil: Date | null;
-        leadId: string | null;
     }>;
     findAll(req: any): Promise<({
         customer: {
             id: string;
-            source: string | null;
-            createdAt: Date;
+            email: string | null;
             companyId: string;
             name: string;
             phone: string;
-            email: string | null;
+            createdAt: Date;
             address: string | null;
+            source: string | null;
             tags: string | null;
         };
         items: {
@@ -46,27 +47,27 @@ export declare class QuotationsController {
         }[];
     } & {
         id: string;
+        companyId: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        companyId: string;
         customerId: string;
-        subtotal: number;
+        leadId: string | null;
         discount: number;
+        subtotal: number;
         total: number;
         validUntil: Date | null;
-        leadId: string | null;
     })[]>;
     findOne(req: any, id: string): Promise<{
         customer: {
             id: string;
-            source: string | null;
-            createdAt: Date;
+            email: string | null;
             companyId: string;
             name: string;
             phone: string;
-            email: string | null;
+            createdAt: Date;
             address: string | null;
+            source: string | null;
             tags: string | null;
         };
         items: {
@@ -79,28 +80,29 @@ export declare class QuotationsController {
         }[];
     } & {
         id: string;
+        companyId: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        companyId: string;
         customerId: string;
-        subtotal: number;
+        leadId: string | null;
         discount: number;
+        subtotal: number;
         total: number;
         validUntil: Date | null;
-        leadId: string | null;
     }>;
+    generatePdf(req: any, id: string, res: Response): Promise<void>;
     updateStatus(req: any, id: string, status: string): Promise<{
         id: string;
+        companyId: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        companyId: string;
         customerId: string;
-        subtotal: number;
+        leadId: string | null;
         discount: number;
+        subtotal: number;
         total: number;
         validUntil: Date | null;
-        leadId: string | null;
     }>;
 }

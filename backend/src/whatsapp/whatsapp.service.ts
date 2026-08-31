@@ -1,11 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EventsGateway } from '../events/events.gateway';
 
 @Injectable()
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsGateway: EventsGateway
+  ) {}
 
   async handleIncomingMessage(entry: any) {
     try {
@@ -81,7 +85,7 @@ export class WhatsappService {
               }
 
               // 3. Store Message
-              await this.prisma.message.create({
+              const newMessage = await this.prisma.message.create({
                 data: {
                   conversationId: conversation.id,
                   senderType: 'CUSTOMER',
@@ -96,6 +100,12 @@ export class WhatsappService {
                 where: { id: conversation.id },
                 data: { lastMessageAt: new Date() }
               });
+
+              // 4. Emit WebSocket Event
+              this.eventsGateway.emitNewMessage(tenantId, {
+                ...newMessage,
+                conversation
+              });
             }
           }
         }
@@ -106,8 +116,58 @@ export class WhatsappService {
   }
 
   async sendMessage(to: string, text: string) {
-    // TODO: Implement actual fetch/axios call to Meta Graph API
-    this.logger.log(`Sending message to ${to}: ${text}`);
-    return { success: true };
+    const token = process.env.META_ACCESS_TOKEN;
+    const phoneId = process.env.META_PHONE_NUMBER_ID; // In production, this would be retrieved from Company config
+
+    if (!token || !phoneId || token === 'EAA_YOUR_META_TOKEN_HERE') {
+      this.logger.warn(`Mock sending message to ${to}: ${text} (Meta API not configured)`);
+      return { success: true, mocked: true };
+    }
+
+    try {
+      const response = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: to,
+          type: 'text',
+          text: { body: text }
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data));
+      }
+
+      this.logger.log(`Successfully sent message to ${to}`);
+      return { success: true, data };
+    } catch (error) {
+      this.logger.error(`Failed to send WhatsApp message to ${to}:`, error);
+      throw error;
+    }
+  }
+  async broadcastMessage(tenantId: string, leadIds: string[], messageText: string) {
+    const leads = await this.prisma.lead.findMany({
+      where: { id: { in: leadIds }, companyId: tenantId },
+      include: { customer: true }
+    });
+    
+    let sentCount = 0;
+    for (const lead of leads) {
+      if (lead.customer && lead.customer.phone) {
+        try {
+          await this.sendMessage(lead.customer.phone, messageText);
+          sentCount++;
+        } catch (e) {
+          this.logger.error(`Failed to broadcast to ${lead.customer.phone}`);
+        }
+      }
+    }
+    return { success: true, sentCount };
   }
 }

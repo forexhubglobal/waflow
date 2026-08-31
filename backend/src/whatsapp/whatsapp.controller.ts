@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Query, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Res, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import { WhatsappService } from './whatsapp.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { Response } from 'express';
 
 @Controller('whatsapp')
@@ -40,5 +41,22 @@ export class WhatsappController {
         this.whatsappService.handleIncomingMessage(body.entry).catch(console.error);
       }
     }
+  }
+
+  // Frontend API to send message
+  @Post('send')
+  async sendOutboundMessage(@Body() body: { to: string, text: string, conversationId: string }) {
+    // 1. Send via Meta API
+    const result = await this.whatsappService.sendMessage(body.to, body.text);
+    
+    // 2. We should ideally save this to Prisma in the service, but for MVP doing it here or in service is fine.
+    // Assuming the service could be refactored to save it. 
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('broadcast')
+  async broadcastMessage(@Request() req, @Body() body: { leadIds: string[], message: string }) {
+    return this.whatsappService.broadcastMessage(req.user.companyId, body.leadIds, body.message);
   }
 }

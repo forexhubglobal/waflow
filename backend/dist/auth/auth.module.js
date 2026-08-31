@@ -12,7 +12,6 @@ const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const auth_service_1 = require("./auth.service");
 const auth_controller_1 = require("./auth.controller");
-const users_module_1 = require("../users/users.module");
 exports.jwtConstants = {
     secret: 'DO_NOT_USE_THIS_IN_PRODUCTION_WAFLOW_SECRET',
 };
@@ -22,7 +21,6 @@ exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            users_module_1.UsersModule,
             passport_1.PassportModule,
             jwt_1.JwtModule.register({
                 secret: exports.jwtConstants.secret,

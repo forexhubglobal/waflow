@@ -1,12 +1,13 @@
 export declare class AiService {
     private readonly logger;
-    private callLlm;
+    private openai;
+    constructor();
     generateSuggestedReply(customerMessage: string, companyContext: any): Promise<string>;
     summarizeConversation(messages: any[]): Promise<string>;
     analyzeIntentAndScore(customerMessage: string): Promise<{
-        intent: string;
-        scoreAdjustment: number;
-        recommendedStatus: string;
-        isHot: boolean;
+        intent: any;
+        scoreAdjustment: any;
+        recommendedStatus: any;
+        isHot: any;
     }>;
 }

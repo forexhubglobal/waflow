@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhatsappController = void 0;
 const common_1 = require("@nestjs/common");
 const whatsapp_service_1 = require("./whatsapp.service");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 let WhatsappController = class WhatsappController {
     whatsappService;
     VERIFY_TOKEN = 'WAFLOW_GLOBAL_SECURE_TOKEN_2026';
@@ -38,6 +39,13 @@ let WhatsappController = class WhatsappController {
             }
         }
     }
+    async sendOutboundMessage(body) {
+        const result = await this.whatsappService.sendMessage(body.to, body.text);
+        return result;
+    }
+    async broadcastMessage(req, body) {
+        return this.whatsappService.broadcastMessage(req.user.companyId, body.leadIds, body.message);
+    }
 };
 exports.WhatsappController = WhatsappController;
 __decorate([
@@ -58,6 +66,22 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], WhatsappController.prototype, "handleIncoming", null);
+__decorate([
+    (0, common_1.Post)('send'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], WhatsappController.prototype, "sendOutboundMessage", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('broadcast'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], WhatsappController.prototype, "broadcastMessage", null);
 exports.WhatsappController = WhatsappController = __decorate([
     (0, common_1.Controller)('whatsapp'),
     __metadata("design:paramtypes", [whatsapp_service_1.WhatsappService])

@@ -13,11 +13,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhatsappService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const events_gateway_1 = require("../events/events.gateway");
 let WhatsappService = WhatsappService_1 = class WhatsappService {
     prisma;
+    eventsGateway;
     logger = new common_1.Logger(WhatsappService_1.name);
-    constructor(prisma) {
+    constructor(prisma, eventsGateway) {
         this.prisma = prisma;
+        this.eventsGateway = eventsGateway;
     }
     async handleIncomingMessage(entry) {
         try {
@@ -75,7 +78,7 @@ let WhatsappService = WhatsappService_1 = class WhatsappService {
                                     }
                                 });
                             }
-                            await this.prisma.message.create({
+                            const newMessage = await this.prisma.message.create({
                                 data: {
                                     conversationId: conversation.id,
                                     senderType: 'CUSTOMER',
@@ -88,6 +91,10 @@ let WhatsappService = WhatsappService_1 = class WhatsappService {
                                 where: { id: conversation.id },
                                 data: { lastMessageAt: new Date() }
                             });
+                            this.eventsGateway.emitNewMessage(tenantId, {
+                                ...newMessage,
+                                conversation
+                            });
                         }
                     }
                 }
@@ -98,13 +105,62 @@ let WhatsappService = WhatsappService_1 = class WhatsappService {
         }
     }
     async sendMessage(to, text) {
-        this.logger.log(`Sending message to ${to}: ${text}`);
-        return { success: true };
+        const token = process.env.META_ACCESS_TOKEN;
+        const phoneId = process.env.META_PHONE_NUMBER_ID;
+        if (!token || !phoneId || token === 'EAA_YOUR_META_TOKEN_HERE') {
+            this.logger.warn(`Mock sending message to ${to}: ${text} (Meta API not configured)`);
+            return { success: true, mocked: true };
+        }
+        try {
+            const response = await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    messaging_product: 'whatsapp',
+                    to: to,
+                    type: 'text',
+                    text: { body: text }
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(JSON.stringify(data));
+            }
+            this.logger.log(`Successfully sent message to ${to}`);
+            return { success: true, data };
+        }
+        catch (error) {
+            this.logger.error(`Failed to send WhatsApp message to ${to}:`, error);
+            throw error;
+        }
+    }
+    async broadcastMessage(tenantId, leadIds, messageText) {
+        const leads = await this.prisma.lead.findMany({
+            where: { id: { in: leadIds }, companyId: tenantId },
+            include: { customer: true }
+        });
+        let sentCount = 0;
+        for (const lead of leads) {
+            if (lead.customer && lead.customer.phone) {
+                try {
+                    await this.sendMessage(lead.customer.phone, messageText);
+                    sentCount++;
+                }
+                catch (e) {
+                    this.logger.error(`Failed to broadcast to ${lead.customer.phone}`);
+                }
+            }
+        }
+        return { success: true, sentCount };
     }
 };
 exports.WhatsappService = WhatsappService;
 exports.WhatsappService = WhatsappService = WhatsappService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        events_gateway_1.EventsGateway])
 ], WhatsappService);
 //# sourceMappingURL=whatsapp.service.js.map

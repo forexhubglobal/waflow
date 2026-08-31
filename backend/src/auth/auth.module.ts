@@ -12,7 +12,6 @@ export const jwtConstants = {
 
 @Module({
   imports: [
-    UsersModule,
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,

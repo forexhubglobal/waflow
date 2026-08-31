@@ -17,12 +17,14 @@ const leads_module_js_1 = require("./leads/leads.module.js");
 const whatsapp_module_js_1 = require("./whatsapp/whatsapp.module.js");
 const quotations_module_js_1 = require("./quotations/quotations.module.js");
 const ai_module_js_1 = require("./ai/ai.module.js");
+const admin_module_js_1 = require("./admin/admin.module.js");
+const cron_module_js_1 = require("./cron/cron.module.js");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_js_1.PrismaModule, users_module_js_1.UsersModule, auth_module_js_1.AuthModule, leads_module_js_1.LeadsModule, whatsapp_module_js_1.WhatsappModule, quotations_module_js_1.QuotationsModule, ai_module_js_1.AiModule],
+        imports: [prisma_module_js_1.PrismaModule, users_module_js_1.UsersModule, auth_module_js_1.AuthModule, leads_module_js_1.LeadsModule, whatsapp_module_js_1.WhatsappModule, quotations_module_js_1.QuotationsModule, ai_module_js_1.AiModule, admin_module_js_1.AdminModule, cron_module_js_1.CronModule],
         controllers: [app_controller_js_1.AppController],
         providers: [app_service_js_1.AppService],
     })

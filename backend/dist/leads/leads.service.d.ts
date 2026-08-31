@@ -18,22 +18,22 @@ export declare class LeadsService {
     }>;
     findAll(companyId: string): Promise<({
         customer: {
-            name: string;
-            email: string | null;
-            phone: string;
             id: string;
+            email: string | null;
             companyId: string;
+            name: string;
+            phone: string;
             createdAt: Date;
             address: string | null;
             source: string | null;
             tags: string | null;
         };
         assignedTo: {
-            name: string;
-            email: string;
-            phone: string | null;
             id: string;
+            email: string;
             companyId: string;
+            name: string;
+            phone: string | null;
             passwordHash: string;
             role: string;
             status: string;
@@ -55,22 +55,22 @@ export declare class LeadsService {
     })[]>;
     findOne(id: string, companyId: string): Promise<{
         customer: {
-            name: string;
-            email: string | null;
-            phone: string;
             id: string;
+            email: string | null;
             companyId: string;
+            name: string;
+            phone: string;
             createdAt: Date;
             address: string | null;
             source: string | null;
             tags: string | null;
         };
         assignedTo: {
-            name: string;
-            email: string;
-            phone: string | null;
             id: string;
+            email: string;
             companyId: string;
+            name: string;
+            phone: string | null;
             passwordHash: string;
             role: string;
             status: string;

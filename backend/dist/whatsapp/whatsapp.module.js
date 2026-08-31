@@ -10,13 +10,17 @@ exports.WhatsappModule = void 0;
 const common_1 = require("@nestjs/common");
 const whatsapp_controller_js_1 = require("./whatsapp.controller.js");
 const whatsapp_service_js_1 = require("./whatsapp.service.js");
+const auth_module_js_1 = require("../auth/auth.module.js");
+const events_module_js_1 = require("../events/events.module.js");
 let WhatsappModule = class WhatsappModule {
 };
 exports.WhatsappModule = WhatsappModule;
 exports.WhatsappModule = WhatsappModule = __decorate([
     (0, common_1.Module)({
+        imports: [events_module_js_1.EventsModule, auth_module_js_1.AuthModule],
         controllers: [whatsapp_controller_js_1.WhatsappController],
-        providers: [whatsapp_service_js_1.WhatsappService]
+        providers: [whatsapp_service_js_1.WhatsappService],
+        exports: [whatsapp_service_js_1.WhatsappService]
     })
 ], WhatsappModule);
 //# sourceMappingURL=whatsapp.module.js.map

@@ -26,11 +26,11 @@ export declare class QuotationsService {
     }>;
     findAll(companyId: string): Promise<({
         customer: {
-            name: string;
-            email: string | null;
-            phone: string;
             id: string;
+            email: string | null;
             companyId: string;
+            name: string;
+            phone: string;
             createdAt: Date;
             address: string | null;
             source: string | null;
@@ -59,11 +59,11 @@ export declare class QuotationsService {
     })[]>;
     findOne(id: string, companyId: string): Promise<{
         customer: {
-            name: string;
-            email: string | null;
-            phone: string;
             id: string;
+            email: string | null;
             companyId: string;
+            name: string;
+            phone: string;
             createdAt: Date;
             address: string | null;
             source: string | null;
