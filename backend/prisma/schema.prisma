@@ -1,0 +1,180 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -------------------------------------
+// TENANT & BILLING
+// -------------------------------------
+
+model Company {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  phone           String?
+  address         String?
+  country         String?
+  industry        String?
+  status          String   @default("ACTIVE") // ACTIVE, SUSPENDED, DEACTIVATED
+  waPhoneNumberId String?  @unique // Meta WhatsApp Phone Number ID
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  users         User[]
+  leads         Lead[]
+  customers     Customer[]
+  subscriptions Subscription[]
+  conversations Conversation[]
+  quotations    Quotation[]
+}
+
+model Subscription {
+  id        String    @id @default(uuid())
+  companyId String
+  company   Company   @relation(fields: [companyId], references: [id])
+  planId    String
+  plan      Plan      @relation(fields: [planId], references: [id])
+  status    String    @default("TRIAL") // TRIAL, ACTIVE, PAST_DUE, CANCELED
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+}
+
+model Plan {
+  id            String         @id @default(uuid())
+  name          String // Starter, Growth, Business, Enterprise
+  priceMonthly  Float
+  priceYearly   Float
+  userLimit     Int
+  contactLimit  Int
+  whatsappLimit Int
+  aiUsageLimit  Int
+  subscriptions Subscription[]
+}
+
+// -------------------------------------
+// USER & ROLE MANAGEMENT
+// -------------------------------------
+
+model User {
+  id           String   @id @default(uuid())
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id])
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         String // OWNER, ADMIN, MANAGER, SALESPERSON, VIEWER
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+
+  assignedLeads Lead[]
+}
+
+// -------------------------------------
+// CRM: LEADS & CUSTOMERS
+// -------------------------------------
+
+model Customer {
+  id        String   @id @default(uuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  name      String
+  phone     String
+  email     String?
+  address   String?
+  source    String?
+  tags      String?
+  createdAt DateTime @default(now())
+
+  leads         Lead[]
+  conversations Conversation[]
+  quotations    Quotation[]
+}
+
+model Lead {
+  id           String    @id @default(uuid())
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id])
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  assignedToId String?
+  assignedTo   User?     @relation(fields: [assignedToId], references: [id])
+
+  title      String? // e.g., "Kitchen Renovation"
+  status     String      @default("NEW") // NEW, CONTACTED, QUALIFIED, QUOTATION, NEGOTIATION, WON, LOST
+  score      Int         @default(0) // 0-100
+  budget     Float?
+  source     String?
+  notes      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  quotations Quotation[]
+}
+
+// -------------------------------------
+// WHATSAPP INBOX
+// -------------------------------------
+
+model Conversation {
+  id            String   @id @default(uuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id])
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  status        String   @default("OPEN") // OPEN, RESOLVED
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  messages Message[]
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderType     String // CUSTOMER, SALESPERSON, AI
+  senderId       String? // If SALESPERSON, points to User ID
+  content        String
+  messageType    String       @default("TEXT") // TEXT, IMAGE, DOCUMENT
+  status         String       @default("SENT") // SENT, DELIVERED, READ, FAILED
+  waMessageId    String?      @unique // ID from Meta
+  createdAt      DateTime     @default(now())
+}
+
+// -------------------------------------
+// QUOTATION SYSTEM
+// -------------------------------------
+
+model Quotation {
+  id         String   @id @default(uuid())
+  companyId  String
+  company    Company  @relation(fields: [companyId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  leadId     String?
+  lead       Lead?    @relation(fields: [leadId], references: [id])
+
+  subtotal   Float     @default(0)
+  discount   Float     @default(0)
+  total      Float     @default(0)
+  status     String    @default("DRAFT") // DRAFT, SENT, VIEWED, ACCEPTED, REJECTED, EXPIRED
+  validUntil DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  items QuotationItem[]
+}
+
+model QuotationItem {
+  id          String    @id @default(uuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Int       @default(1)
+  unitPrice   Float
+  totalPrice  Float
+}
