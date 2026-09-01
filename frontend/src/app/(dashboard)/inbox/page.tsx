@@ -19,7 +19,7 @@ export default function InboxPage() {
     // Initialize Socket
     const token = localStorage.getItem('token') || localStorage.getItem('access_token');
     if (token) {
-      const newSocket = io('http://localhost:3001', {
+      const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}`, {
         auth: { token }
       });
 
@@ -40,7 +40,7 @@ export default function InboxPage() {
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
     try {
-      const response = await fetch('http://localhost:3001/whatsapp/send', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/whatsapp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

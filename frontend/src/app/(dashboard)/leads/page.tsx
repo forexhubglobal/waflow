@@ -10,7 +10,7 @@ export default function LeadsPage() {
   const fetchLeads = async () => {
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-      const res = await fetch('http://localhost:3001/leads', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/leads`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -36,7 +36,7 @@ export default function LeadsPage() {
     if (selectedLeads.size === 0 || !broadcastMsg.trim()) return;
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-      const res = await fetch('http://localhost:3001/whatsapp/broadcast', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/whatsapp/broadcast`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,

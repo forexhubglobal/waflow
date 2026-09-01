@@ -8,7 +8,7 @@ export default function QuotationsPage() {
     const fetchQuotes = async () => {
       try {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-        const res = await fetch('http://localhost:3001/quotations', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/quotations`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -69,7 +69,7 @@ export default function QuotationsPage() {
                   <button className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
                   <button onClick={async () => {
                     const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-                    const res = await fetch(`http://localhost:3001/quotations/${quote.id}/pdf`, {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/quotations/${quote.id}/pdf`, {
                       headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (res.ok) {

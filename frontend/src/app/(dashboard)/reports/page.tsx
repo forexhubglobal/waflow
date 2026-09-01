@@ -10,7 +10,7 @@ export default function ReportsPage() {
     const fetchAndCalculate = async () => {
       try {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-        const res = await fetch('http://localhost:3001/leads', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/leads`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {

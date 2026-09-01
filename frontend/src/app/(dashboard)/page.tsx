@@ -16,7 +16,7 @@ export default function DashboardPage() {
       }
 
       try {
-        const res = await fetch('http://localhost:3001/leads', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/leads`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -84,7 +84,7 @@ export default function DashboardPage() {
 
                 // Backend call
                 const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-                await fetch(`http://localhost:3001/leads/${leadId}`, {
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/leads/${leadId}`, {
                   method: 'PATCH',
                   headers: {
                     'Authorization': `Bearer ${token}`,

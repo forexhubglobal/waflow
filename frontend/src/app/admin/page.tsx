@@ -14,10 +14,10 @@ export default function AdminDashboardPage() {
       const token = localStorage.getItem('token');
       const headers = { 'Authorization': `Bearer ${token}` };
       
-      const statsRes = await fetch('http://localhost:3001/admin/stats', { headers });
+      const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/admin/stats`, { headers });
       if (statsRes.ok) setStats(await statsRes.json());
 
-      const compRes = await fetch('http://localhost:3001/admin/companies', { headers });
+      const compRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/admin/companies`, { headers });
       if (compRes.ok) setCompanies(await compRes.json());
     } catch (e) {
       console.error(e);
@@ -28,7 +28,7 @@ export default function AdminDashboardPage() {
     try {
       const token = localStorage.getItem('token');
       const newStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-      await fetch(`http://localhost:3001/admin/companies/${id}/status`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/admin/companies/${id}/status`, {
         method: 'PATCH',
         headers: { 
           'Authorization': `Bearer ${token}`,
